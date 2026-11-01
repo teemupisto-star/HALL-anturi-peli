@@ -43,7 +43,6 @@
     .jack-v { background: #ef4444; }
     .jack-label { font-size: 0.65rem; color: #fff; font-weight: bold; margin-top: 2px; }
 
-    /* Right Panel Interactive Elements */
     .right-panel { flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 15px; }
 
     .box-container { background: #d7ccc8; border: 2px solid #8d6e63; border-radius: 10px; padding: 15px; color: #3e2723; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
@@ -58,7 +57,6 @@
     .scope-box { background: #000; border: 2px solid #22c55e; border-radius: 8px; height: 110px; position: relative; overflow: hidden; }
     canvas { width: 100%; height: 100%; display: block; }
 
-    /* Schematic SVG Container */
     .schematic-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 15px; text-align: center; }
     .comp-btn { background: #334155; color: #38bdf8; border: 1px solid #0284c7; padding: 8px 12px; margin: 5px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     .comp-btn.fixed { background: #15803d; color: #fff; border-color: #22c55e; }
@@ -111,7 +109,6 @@
 
     <!-- Right Interactive Panel -->
     <div class="right-panel">
-      <!-- Power Supply Box -->
       <div class="box-container">
         <div class="box-title">📦 Virtalähdekotelo (Beige)</div>
         <div style="font-size: 0.85rem; line-height: 1.4;">
@@ -120,64 +117,48 @@
         </div>
       </div>
 
-      <!-- Level 1 Component Fixing & SVG Schematic -->
       <div id="level1-panel" class="schematic-box" style="display:none;">
         <div style="font-weight:bold; margin-bottom:10px; color:#facc15;">Korjaa piirustuksen virheet klikkaamalla:</div>
         <button id="comp1" class="comp-btn" onclick="fixComponent(1)">❌ Transistori: Peilikuvana</button>
         <button id="comp2" class="comp-btn" onclick="fixComponent(2)">❌ Diodi: Väärinpäin</button>
         
-        <!-- Interactive Circuit Diagram -->
         <svg class="schematic-svg" viewBox="0 0 400 150">
-          <!-- Power lines -->
           <line x1="20" y1="30" x2="380" y2="30" stroke="#ef4444" stroke-width="2" />
-          <text x="25" y="25" fill="#ef4444" font-size="12">+4.5V</text>
+          <text x="25" y="22" fill="#ef4444" font-size="12">+4.5V</text>
           
           <line x1="20" y1="130" x2="380" y2="130" stroke="#38bdf8" stroke-width="2" />
           <text x="25" y="145" fill="#38bdf8" font-size="12">GND (Maihin)</text>
           
-          <!-- Hall element -->
           <rect x="50" y="55" width="60" height="40" fill="#334155" stroke="#94a3b8" stroke-width="2" rx="4"/>
           <text x="62" y="78" fill="#fff" font-size="11">HALL</text>
           <line x1="110" y1="75" x2="150" y2="75" stroke="#fff" stroke-width="2"/>
           
-          <!-- Schmitt trigger / Amplifier -->
           <polygon points="150,55 150,95 190,75" fill="#334155" stroke="#94a3b8" stroke-width="2"/>
           <line x1="190" y1="75" x2="230" y2="75" stroke="#fff" stroke-width="2"/>
 
-          <!-- Transistor (Mirrored initially vs Fixed) -->
-          <g id="svg-transistor" transform="translate(230, 50) scale(-1, 1)">
-            <circle cx="20" cy="25" r="22" fill="none" stroke="#f87171" stroke-width="2" id="trans-circle"/>
-            <line x1="0" y1="25" x2="12" y2="25" stroke="#fff" stroke-width="2"/>
-            <line x1="12" y1="10" x2="12" y2="40" stroke="#fff" stroke-width="3"/>
-            <line x1="12" y1="15" x2="30" y2="5" stroke="#fff" stroke-width="2"/>
-            <line x1="12" y1="35" x2="30" y2="45" stroke="#fff" stroke-width="2"/>
-            <polygon points="30,45 22,40 25,33" fill="#fff"/>
+          <g id="svg-trans-group" transform="translate(250, 75)">
+            <circle cx="0" cy="0" r="20" fill="none" stroke="#f87171" stroke-width="2" id="trans-circle"/>
+            <path id="trans-path" d="M -12,-10 L -12,10 M -12,-5 L 10,-15 M -12,5 L 10,15" stroke="#f87171" stroke-width="2" fill="none"/>
           </g>
-          <text x="235" y="100" fill="#f87171" font-size="11" id="trans-text">NPN (Peilikuva)</text>
+          <text x="220" y="112" fill="#f87171" font-size="11" id="trans-text">NPN (Peilikuva)</text>
 
-          <!-- Diode -->
-          <g id="svg-diode" transform="translate(320, 65) rotate(180)">
-            <line x1="0" y1="10" x2="30" y2="10" stroke="#fff" stroke-width="2"/>
-            <polygon points="10,0 10,20 25,10" fill="#f87171" id="diode-poly"/>
-            <line x1="25" y1="0" x2="25" y2="20" stroke="#f87171" stroke-width="3" id="diode-line"/>
+          <g id="svg-diode-group" transform="translate(330, 75)">
+            <path id="diode-path" d="M 15,-10 L -5,0 L 15,10 Z M -5,-10 L -5,10" fill="#f87171" stroke="#f87171" stroke-width="2"/>
           </g>
-          <text x="310" y="100" fill="#f87171" font-size="11" id="diode-text">Diodi (Väärin)</text>
+          <text x="310" y="112" fill="#f87171" font-size="11" id="diode-text">Diodi (Väärin)</text>
         </svg>
       </div>
 
-      <!-- Magnet Interaction -->
       <div class="magnet-control">
         <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 8px;">Vedä magneettia hiirellä anturin kohdalle:</div>
         <div id="magnet" class="magnet" style="transform: translateX(0px);" onmousedown="startDrag(event)">🧲 Magneetti</div>
       </div>
 
-      <!-- Sensor Status -->
       <div class="sensor-card">
         <div style="color: #38bdf8; font-weight: bold; margin-bottom: 4px;" id="sensor-type-title">3-johtiminen Hall-anturi (NPN)</div>
         <div id="sensor-state" style="font-size: 0.85rem; color: #cbd5e1;">Tila: Ei magneettikenttää (Transistori EI johda)</div>
       </div>
 
-      <!-- Scope canvas -->
       <div class="scope-box">
         <canvas id="scopeCanvas"></canvas>
       </div>
@@ -187,15 +168,16 @@
 
 <script>
   let currentLevel = 1;
-  let dialState = 0; // 0: OFF, 1: DCV (V=), 2: RES (Ω), 3: mA
+  // dialState: 0 = OFF (osottaa klo 7), 1 = DCV V= (klo 10), 2 = Ω (klo 2), 3 = mA (klo 4)
+  let dialState = 0; 
   let magnetNear = false;
   let comp1Fixed = false;
   let comp2Fixed = false;
   let history = new Array(100).fill(4.5);
 
   const statusMessages = [
-    "<strong>Taso 1: Virheenetsintä.</strong> Kaaviossa komponentit on piirretty peilikuvana ja väärin päin. Korjaa sisäosat klikkaamalla painikkeita ja naksauta yleismittarin valintakytkin asentoon <strong>DCV (V=)</strong>.",
-    "<strong>Taso 2: 3-johtiminen Digitaalinen Kaksonen.</strong> Kytke yleismittari DCV-alueelle. Siirrä magneettia anturille ja havaitse jännitteen putoaminen <strong>4.50 V ➔ 0.00 V</strong>, kun avocollector-transistori kytkee maihin.",
+    "<strong>Taso 1: Virheenetsintä.</strong> Korjaa piirustuksen virheet klikkaamalla painikkeita ja naksauta yleismittarin valintakytkin asentoon <strong>DCV (V=)</strong>.",
+    "<strong>Taso 2: 3-johtiminen Digitaalinen Kaksonen.</strong> Kytke yleismittari DCV-alueelle (V=). Siirrä magneettia anturille ja havaitse jännitteen putoaminen <strong>4.50 V ➔ 0.00 V</strong>.",
     "<strong>Taso 3: 2-johtiminen Anturi.</strong> Tässä virtasilmukka-anturissa jännite muuttuu virtatason mukaan. <em>Huomio: 2-johtimista anturia ei saa koskaan mitata ohmialueella!</em>"
   ];
 
@@ -212,8 +194,15 @@
 
   function rotateDial() {
     dialState = (dialState + 1) % 4;
-    const dialAngles = [0, 45, 135, 225]; 
+    
+    // Pyörähdyskulmat:
+    // 0 = OFF (-135 deg / klo 7)
+    // 1 = DCV V= (-45 deg / klo 10)
+    // 2 = Ω (+45 deg / klo 2)
+    // 3 = mA (+135 deg / klo 4)
+    const dialAngles = [-135, -45, 45, 135]; 
     document.getElementById('dial').style.transform = `rotate(${dialAngles[dialState]}deg)`;
+    
     updateDMM();
   }
 
@@ -229,7 +218,13 @@
     screen.classList.remove('off');
 
     if (currentLevel === 1 && (!comp1Fixed || !comp2Fixed)) {
-      screen.innerText = "ERR";
+      if (dialState === 1) {
+        screen.innerText = "ERR V=";
+      } else if (dialState === 2) {
+        screen.innerText = "O.L Ω";
+      } else {
+        screen.innerText = "0.00 mA";
+      }
       return;
     }
 
@@ -239,11 +234,11 @@
       } else {
         screen.innerText = magnetNear ? "0.00 V" : "4.50 V";
       }
-    } else if (dialState === 2) { // Ω
+    } else if (dialState === 2) { // Ohmi (Ω)
       if (currentLevel === 3) {
         screen.innerText = "VARO!";
       } else {
-        screen.innerText = magnetNear ? "0.1 Ω" : "O.L";
+        screen.innerText = magnetNear ? "0.1 Ω" : "O.L Ω";
       }
     } else if (dialState === 3) { // mA
       screen.innerText = magnetNear ? "2.25 mA" : "0.00 mA";
@@ -255,22 +250,24 @@
       comp1Fixed = true;
       document.getElementById('comp1').innerText = "✓ Transistori: Oikein päin";
       document.getElementById('comp1').classList.add('fixed');
-      document.getElementById('svg-transistor').setAttribute('transform', 'translate(250, 50) scale(1, 1)');
+      
       document.getElementById('trans-circle').setAttribute('stroke', '#22c55e');
+      document.getElementById('trans-path').setAttribute('stroke', '#22c55e');
       document.getElementById('trans-text').innerText = "NPN (Oikein)";
       document.getElementById('trans-text').setAttribute('fill', '#22c55e');
     } else if (num === 2) {
       comp2Fixed = true;
       document.getElementById('comp2').innerText = "✓ Diodi: Napaisuus OK";
       document.getElementById('comp2').classList.add('fixed');
-      document.getElementById('svg-diode').setAttribute('transform', 'translate(320, 65) rotate(0)');
-      document.getElementById('diode-poly').setAttribute('fill', '#22c55e');
-      document.getElementById('diode-line').setAttribute('stroke', '#22c55e');
+      
+      document.getElementById('diode-path').setAttribute('d', 'M -5,-10 L 15,0 L -5,10 Z M 15,-10 L 15,10');
+      document.getElementById('diode-path').setAttribute('fill', '#22c55e');
+      document.getElementById('diode-path').setAttribute('stroke', '#22c55e');
       document.getElementById('diode-text').innerText = "Diodi (OK)";
       document.getElementById('diode-text').setAttribute('fill', '#22c55e');
     }
     if (comp1Fixed && comp2Fixed) {
-      document.getElementById('status').innerHTML = "<strong>Loistavaa!</strong> Sisäiset komponentit on korjattu kaavioon. Nyt voit mitata jännitteen yleismittarilla!";
+      document.getElementById('status').innerHTML = "<strong>Loistavaa!</strong> Kytkentäkaavio on korjattu! Kytke nyt mittari <strong>DCV (V=)</strong> -asentoon.";
     }
     updateDMM();
   }
@@ -320,7 +317,6 @@
     history.shift();
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
     ctx.strokeStyle = '#1e293b';
     ctx.lineWidth = 1;
     ctx.beginPath();
