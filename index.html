@@ -137,7 +137,7 @@
 
       <!-- Magnet Control -->
       <div class="magnet-control">
-        <div style="font-size: 0.85rem; color: #94a3b8;">Vedä magneettia hiirellä/sormella tai käytä nappia:</div>
+        <div style="font-size: 0.85rem; color: #94a3b8;">Vedä magneettia vasemmalle anturin kohdalle tai käytä nappia:</div>
         <div id="magnet" class="magnet" style="transform: translateX(0px);" onmousedown="startDrag(event)" ontouchstart="startDrag(event)">🧲 Magneetti</div>
         <button class="toggle-btn" onclick="toggleMagnet()">🧲 Vie / Poista magneetti</button>
       </div>
@@ -157,7 +157,7 @@
   let history = new Array(100).fill(4.5);
 
   const statusMessages = [
-    "<strong>3-johtiminen Hall-anturi (Open Collector NPN).</strong> Käännä yleismittari asentoon <strong>DCV (V=)</strong>. Siirrä magneettia anturille ja havaitse, kuinka NPN-transistori avautuu ja vetää jännitteen maihin (4.50 V ➔ 0.00 V).",
+    "<strong>3-johtiminen Hall-anturi (Open Collector NPN).</strong> Käännä yleismittari asentoon <strong>DCV (V=)</strong>. Siirrä magneettia vasemmalle anturin kohdalle ja havaitse, kuinka NPN-transistori avautuu ja vetää jännitteen maihin (4.50 V ➔ 0.00 V).",
     "<strong>2-johtiminen Hall-anturi (Virtasilmukka).</strong> Käännä yleismittari asentoon <strong>DCV (V=)</strong>. Tässä anturissa signaali kulkee virtatason muuttuessa. <em>Tärkeää: Älä koskaan mitat tätä ohmialueella (Ω)!</em>"
   ];
 
@@ -214,7 +214,8 @@
 
   function toggleMagnet() {
     magnetNear = !magnetNear;
-    const dx = magnetNear ? 120 : 0;
+    // Liikutetaan magneettia -150px vasemmalle anturin kohdalle
+    const dx = magnetNear ? -150 : 0;
     document.getElementById('magnet').style.transform = `translateX(${dx}px)`;
     document.getElementById('sensor-state').innerText = magnetNear ? 
       "Tila: Magneetti lähellä (Transistori JOHTAA maihin)" : 
@@ -230,11 +231,13 @@
     function onMove(me) {
       let currentX = me.type === 'touchmove' ? me.touches[0].clientX : me.clientX;
       let dx = currentX - startX;
-      dx = Math.max(-20, Math.min(160, dx));
+      // Sallitaan liike vasemmalle (max -180px)
+      dx = Math.min(20, Math.max(-180, dx));
       document.getElementById('magnet').style.transform = `translateX(${dx}px)`;
       
       let wasNear = magnetNear;
-      magnetNear = dx > 70;
+      // Magneetti aktivoituu, kun sitä vedetään riittävästi vasemmalle (alle -70px)
+      magnetNear = dx < -70;
       
       if (wasNear !== magnetNear) {
         document.getElementById('sensor-state').innerText = magnetNear ? 
