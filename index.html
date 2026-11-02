@@ -51,9 +51,25 @@
     .sensor-card { background: #0f172a; border: 2px solid #334155; border-radius: 10px; padding: 15px; text-align: center; }
     .diagram-img { width: 100%; max-width: 450px; border-radius: 8px; border: 2px solid #475569; background: #fff; margin-bottom: 10px; }
 
-    .magnet-control { background: #1e293b; border: 1px dashed #475569; border-radius: 10px; padding: 15px; text-align: center; }
-    .magnet { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; border: 2px solid #f87171; padding: 10px 24px; border-radius: 25px; font-weight: bold; cursor: grab; display: inline-block; user-select: none; box-shadow: 0 4px 12px rgba(239,68,68,0.4); transition: transform 0.1s; }
+    .magnet-control { background: #1e293b; border: 1px dashed #475569; border-radius: 10px; padding: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .magnet { 
+      background: linear-gradient(135deg, #ef4444, #b91c1c); 
+      color: #fff; 
+      border: 2px solid #f87171; 
+      padding: 10px 24px; 
+      border-radius: 25px; 
+      font-weight: bold; 
+      cursor: grab; 
+      display: inline-block; 
+      user-select: none; 
+      touch-action: none; 
+      box-shadow: 0 4px 12px rgba(239,68,68,0.4); 
+      transition: transform 0.1s; 
+    }
     .magnet:active { cursor: grabbing; scale: 1.05; }
+
+    .toggle-btn { background: #0284c7; color: #fff; border: 1px solid #38bdf8; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .toggle-btn:active { background: #0369a1; }
 
     .scope-box { background: #000; border: 2px solid #22c55e; border-radius: 8px; height: 110px; position: relative; overflow: hidden; }
     canvas { width: 100%; height: 100%; display: block; }
@@ -121,8 +137,9 @@
 
       <!-- Magnet Control -->
       <div class="magnet-control">
-        <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 8px;">Vedä magneettia hiirellä anturin kohdalle:</div>
-        <div id="magnet" class="magnet" style="transform: translateX(0px);" onmousedown="startDrag(event)">🧲 Magneetti</div>
+        <div style="font-size: 0.85rem; color: #94a3b8;">Vedä magneettia hiirellä/sormella tai käytä nappia:</div>
+        <div id="magnet" class="magnet" style="transform: translateX(0px);" onmousedown="startDrag(event)" ontouchstart="startDrag(event)">🧲 Magneetti</div>
+        <button class="toggle-btn" onclick="toggleMagnet()">🧲 Vie / Poista magneetti</button>
       </div>
 
       <!-- Scope canvas -->
@@ -141,7 +158,7 @@
 
   const statusMessages = [
     "<strong>3-johtiminen Hall-anturi (Open Collector NPN).</strong> Käännä yleismittari asentoon <strong>DCV (V=)</strong>. Siirrä magneettia anturille ja havaitse, kuinka NPN-transistori avautuu ja vetää jännitteen maihin (4.50 V ➔ 0.00 V).",
-    "<strong>2-johtiminen Hall-anturi (Virtasilmukka).</strong> Käännä yleismittari asentoon <strong>DCV (V=)</strong>. Tässä anturissa signaali kulkee virtatason muuttuessa. <em>Tärkeää: Älä koskaan mittaa tätä ohmialueella (Ω)!</em>"
+    "<strong>2-johtiminen Hall-anturi (Virtasilmukka).</strong> Käännä yleismittari asentoon <strong>DCV (V=)</strong>. Tässä anturissa signaali kulkee virtatason muuttuessa. <em>Tärkeää: Älä koskaan mitat tätä ohmialueella (Ω)!</em>"
   ];
 
   function setLevel(lvl) {
@@ -164,14 +181,12 @@
     const screen = document.getElementById('dmm-screen');
     const img = document.getElementById('diagram');
 
-    // Dynamic Image Swap based on level & magnet state
     if (currentLevel === 1) {
       img.src = magnetNear ? "HALL-3-ON.png" : "HALL-3-OFF.png";
     } else {
       img.src = magnetNear ? "HALL-2-ON.png" : "HALL-2-OFF.png";
     }
 
-    // DMM Display Logic
     if (dialState === 0) {
       screen.innerText = "OFF";
       screen.classList.add('off');
@@ -197,10 +212,24 @@
     }
   }
 
+  function toggleMagnet() {
+    magnetNear = !magnetNear;
+    const dx = magnetNear ? 120 : 0;
+    document.getElementById('magnet').style.transform = `translateX(${dx}px)`;
+    document.getElementById('sensor-state').innerText = magnetNear ? 
+      "Tila: Magneetti lähellä (Transistori JOHTAA maihin)" : 
+      "Tila: Ei magneettikenttää (Transistori EI johda, pull-up 4.5V)";
+    updateDiagramAndDMM();
+  }
+
   function startDrag(e) {
-    let startX = e.clientX;
+    if (e.cancelable) e.preventDefault();
+    
+    let startX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+
     function onMove(me) {
-      let dx = me.clientX - startX;
+      let currentX = me.type === 'touchmove' ? me.touches[0].clientX : me.clientX;
+      let dx = currentX - startX;
       dx = Math.max(-20, Math.min(160, dx));
       document.getElementById('magnet').style.transform = `translateX(${dx}px)`;
       
@@ -214,12 +243,18 @@
         updateDiagramAndDMM();
       }
     }
+
     function onUp() {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
     }
+
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onUp);
   }
 
   function drawScope() {
